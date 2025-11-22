@@ -9,7 +9,7 @@ from datetime import datetime
 from dotenv import load_dotenv
 import random  
 import time
-from app.routes import sucursales, usuarios,productos,categorias,profile,carrito,pedidos,trivia,lealtad,cupones,reportes,localidades,tipo_cambio
+from app.routes import sucursales, usuarios,productos,categorias,profile,carrito,pedidos,trivia,lealtad,cupones,reportes,localidades,tipo_cambio,sinpe,recomendaciones,favoritos,reservaciones,tarjetas,tse
 from app.routes.profile import router as profile_router 
 
 # Cargar variables de entorno
@@ -88,7 +88,7 @@ def create_auditoria(
 class AuditoriaCreate(BaseModel):
     usuario_Id: int
     tabla: str
-    accion: str  # 'insert', 'update', 'delete', 'select'
+    accion: str  
     registro_Id: int = 0
     datos_Anteriores: Optional[str] = None
     datos_Nuevos: Optional[str] = None
@@ -275,6 +275,14 @@ app.include_router(cupones.router)
 app.include_router(reportes.router)
 app.include_router(localidades.router)
 app.include_router(tipo_cambio.router)
+app.include_router(sinpe.router)
+app.include_router(recomendaciones.router)
+app.include_router(favoritos.router)
+app.include_router(reservaciones.router)
+app.include_router(tarjetas.router)
+app.include_router(tse.router)
+
+
 @app.get("/")
 def root():
     return {"message": "API funcionando correctamente"}

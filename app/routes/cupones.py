@@ -1,5 +1,3 @@
-# routes/cupones.py
-
 from fastapi import APIRouter, HTTPException
 from app.config.database import execute_query
 from app.models.cupones import CuponValidarRequest, CuponAplicarRequest, CuponUsoRequest

@@ -1,5 +1,6 @@
 from fastapi import APIRouter, HTTPException, Query,Request
-
+from pydantic import BaseModel
+from typing import Optional
 from app.config.database import execute_query
 from app.models.pedidos import CrearPedidoRequest, CancelarPedidoRequest
 
@@ -8,6 +9,12 @@ router = APIRouter(
     tags=["Pedidos"]
 )
 
+class ConfirmarPedidoDto(BaseModel):
+    metodo_pago: str
+    paypal_order_id: Optional[str] = None
+    paypal_payer_id: Optional[str] = None
+    paypal_amount: Optional[float] = None
+    total: float
 
 @router.post("/crear-desde-carrito")
 async def crear_pedido_desde_carrito(request: Request):
@@ -26,6 +33,14 @@ async def crear_pedido_desde_carrito(request: Request):
         print(f" Parseado exitosamente")
         usuario_id = pedido_request.usuario_id
         print(f" usuario_id: {usuario_id}")
+        metodo_pago = body.get('metodoPago', 'efectivo')
+        paypal_order_id = body.get('paypalOrderId')
+        paypal_payer_id = body.get('paypalPayerId')
+        paypal_amount = body.get('paypalAmount')
+        sinpe_comprobante = body.get('sinpeComprobante')
+        sinpe_telefono = body.get('sinpeTelefono')
+        print(f"metodo_pago: {metodo_pago}")
+        print(f"PayPal Order ID: {paypal_order_id}")
     except Exception as e:
         print(f" Error parseando: {e}")
         raise HTTPException(status_code=422, detail=f"Error: {str(e)}")
@@ -82,14 +97,42 @@ async def crear_pedido_desde_carrito(request: Request):
     
     # 5. Cambiar estado del carrito a 'pendiente'
     print(f" Paso 4: Cambiando estado del carrito a 'pendiente'")
-    update_query = """
-        UPDATE pedidos 
-        SET estado = 'pendiente'
-        WHERE id = %s
-    """
-    execute_query(update_query, (carrito_id,), fetch=False)
-    print(f" Estado actualizado a 'pendiente'")
     
+    if metodo_pago == 'paypal' and paypal_order_id:
+        update_query = """
+            UPDATE pedidos 
+            SET estado = 'pendiente',
+                paypal_order_id = %s,
+                paypal_payer_id = %s,
+                paypal_amount = %s
+            WHERE id = %s
+        """
+        execute_query(update_query, (paypal_order_id, paypal_payer_id, paypal_amount, carrito_id), fetch=False)
+        print(f"Pedido con PayPal")
+        
+    elif metodo_pago == 'sinpe' and sinpe_comprobante:
+        update_query = """
+            UPDATE pedidos 
+            SET estado = 'pendiente',
+                sinpe_comprobante = %s,
+                sinpe_telefono = %s,
+                sinpe_verificado = FALSE
+            WHERE id = %s
+        """
+        execute_query(update_query, (sinpe_comprobante, sinpe_telefono, carrito_id), fetch=False)
+        print(f"🇨🇷 Pedido con SINPE - Comprobante: {sinpe_comprobante}")
+        
+    else:
+        # Pago en efectivo
+        update_query = """
+            UPDATE pedidos 
+            SET estado = 'confirmado',
+                metodo_pago = 'efectivo',
+                fecha_confirmacion = NOW()
+            WHERE id = %s
+        """
+        execute_query(update_query, (carrito_id,), fetch=False)
+        print(f"Pedido confirmado - Pago en efectivo")
     # 6. Retornar pedido creado
     print(f"Pedido creado exitosamente con ID: {carrito_id}")
     

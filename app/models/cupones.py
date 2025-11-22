@@ -1,5 +1,3 @@
-# models/cupones.py
-
 from pydantic import BaseModel
 
 class CuponValidarRequest(BaseModel):

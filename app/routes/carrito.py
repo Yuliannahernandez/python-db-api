@@ -10,8 +10,6 @@ router = APIRouter(
 class AgregarProductoDto(BaseModel):
     producto_id: int
     cantidad: int = 1
-# ============= CARRITO =============
-# routes/carrito.py
 
 @router.get("/usuario/{usuario_id}")
 def get_carrito(usuario_id: int):
@@ -138,7 +136,6 @@ def get_carrito(usuario_id: int):
         "sucursal_id": carrito.get('sucursal_id') 
     }
     
-    # routes/carrito.py
 
 @router.post("/usuario/{usuario_id}/agregar")
 def agregar_producto_al_carrito(usuario_id: int, data: AgregarProductoDto):
@@ -231,7 +228,6 @@ def agregar_producto_al_carrito(usuario_id: int, data: AgregarProductoDto):
         "cantidad": cantidad
     }
 
-# ... resto de endpoints existentes
 
 @router.post("/")
 def create_carrito(usuario_id: int):
@@ -293,17 +289,17 @@ def add_carrito_item(carritoId: int, productoId: int, cantidad: int):
 
 def recalcular_carrito(carrito_id: int):
     """Recalcula subtotal y total del carrito"""
-    query = "SELECT SUM(subtotal) as total FROM pedido_detalles WHERE pedido_id = %s"  # ✅ snake_case
+    query = "SELECT SUM(subtotal) as total FROM pedido_detalles WHERE pedido_id = %s"  
     result = execute_query(query, (carrito_id,))
     
     subtotal = result[0]['total'] or 0
     
     # Obtener descuento actual
-    pedido_query = "SELECT descuento, tipo_entrega FROM pedidos WHERE id = %s"  # ✅ snake_case
+    pedido_query = "SELECT descuento, tipo_entrega FROM pedidos WHERE id = %s"  
     pedido = execute_query(pedido_query, (carrito_id,))
     
     descuento = pedido[0]['descuento'] or 0
-    tipo_entrega = pedido[0]['tipo_entrega']  # ✅ snake_case
+    tipo_entrega = pedido[0]['tipo_entrega']  
     
     # Calcular costo de envío
     costo_envio = 0

@@ -7,7 +7,6 @@ from typing import Optional
 
 router = APIRouter(prefix="/productos", tags=["Productos"])
 
-# ============= MODELO PYDANTIC =============
 class CrearProductoDto(BaseModel):
     nombre: str
     descripcion: Optional[str] = None
@@ -18,7 +17,7 @@ class CrearProductoDto(BaseModel):
     tiempoPreparacion: int = Field(15, alias='tiempoPreparacion')
 class Config:
         populate_by_name = True 
-# ============= ENDPOINTS =============
+
 
 @router.get("/")
 def get_productos():
@@ -46,7 +45,7 @@ def get_producto(id: int):
 
 @router.get("/{id}/detalle")
 def get_producto_detalle_completo(id: int):
-    # Producto base
+    
     producto_query = """
         SELECT 
             p.*, 

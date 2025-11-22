@@ -1,5 +1,3 @@
-# models/lealtad.py
-
 from pydantic import BaseModel
 
 class AgregarPuntosRequest(BaseModel):

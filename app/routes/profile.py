@@ -450,7 +450,7 @@ def delete_metodo_pago(usuario_id: int, metodo_pago_id: int):
     if not metodo:
         raise HTTPException(status_code=404, detail="Método de pago no encontrado")
     
-    # Marcar como inactivo (soft delete)
+    # Marcar como inactivo 
     query = "UPDATE metodos_pago SET activo = FALSE WHERE id = %s AND cliente_id = %s"
     result = execute_query(query, (metodo_pago_id, cliente_id), fetch=False)
     

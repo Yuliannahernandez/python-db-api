@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException
-from app.config.database import execute_query  # Asegúrate de tener la función en tu módulo de conexión
+from app.config.database import execute_query 
 
 router = APIRouter(
     prefix="/categorias",

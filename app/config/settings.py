@@ -11,7 +11,7 @@ class Settings(BaseSettings):
     
     # API
     API_TITLE: str = "Reelish Database API"
-    API_VERSION: str = "1.0.0"
+    API_VERSION: str = "2.0.0"
     API_HOST: str = "0.0.0.0"
     API_PORT: int = 8000
     
