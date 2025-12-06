@@ -22,9 +22,15 @@ app = FastAPI(
 )
 
 # ============= CORS =============
+# Obtener orígenes permitidos desde variable de entorno
+ALLOWED_ORIGINS = os.getenv(
+    'ALLOWED_ORIGINS', 
+    'http://localhost:3000,http://localhost:5173'
+).split(',')
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://localhost:5173"],
+    allow_origins=ALLOWED_ORIGINS,  # Usar variable de entorno
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -32,11 +38,17 @@ app.add_middleware(
 
 # ============= CONFIGURACIÓN BD =============
 DB_CONFIG = {
-    'host': os.getenv('DB_HOST', '127.0.0.1'),
+    'host': os.getenv('DB_HOST', 'restauranteapp.mysql.database.azure.com'),
     'port': int(os.getenv('DB_PORT', 3306)),
-    'user': os.getenv('DB_USERNAME', 'root'),
-    'password': os.getenv('DB_PASSWORD', '1234'),
-    'database': os.getenv('DB_DATABASE', 'restaurant_app')
+    'user': os.getenv('DB_USERNAME', 'yulianahernandez'),
+    'password': os.getenv('DB_PASSWORD', 'Sukipelusa2910#'),
+    'database': os.getenv('DB_DATABASE', 'restaurant_app'),
+    # NUEVO: Configuración SSL para Azure
+    'ssl_disabled': False,
+    'ssl_verify_cert': False,  # Para desarrollo, en producción usa True con certificado
+    'autocommit': False,
+    'charset': 'utf8mb4',
+    'collation': 'utf8mb4_unicode_ci'
 }
 
 def get_db():
@@ -44,8 +56,11 @@ def get_db():
         conn = mysql.connector.connect(**DB_CONFIG)
         return conn
     except Error as e:
-        print(f"Error de conexión: {e}")
-        raise HTTPException(status_code=500, detail=f"Error de conexión: {str(e)}")
+        print(f"❌ Error de conexión a Azure MySQL: {e}")
+        raise HTTPException(
+            status_code=500, 
+            detail=f"Error de conexión a base de datos: {str(e)}"
+        )
 
 def execute_query(query: str, params: tuple = None, fetch: bool = True):
     conn = get_db()
@@ -283,13 +298,41 @@ app.include_router(tarjetas.router)
 app.include_router(tse.router)
 
 
+
+
 @app.get("/")
 def root():
     return {"message": "API funcionando correctamente"}
 
+@app.get("/health")
+def health_check():
+    """Endpoint para verificar estado de la API y BD"""
+    try:
+        conn = get_db()
+        cursor = conn.cursor()
+        cursor.execute("SELECT 1")
+        cursor.fetchone()
+        cursor.close()
+        conn.close()
+        
+        return {
+            "status": "healthy",
+            "database": "connected ✅",
+            "azure_mysql": True,
+            "timestamp": datetime.now().isoformat()
+        }
+    except Exception as e:
+        return {
+            "status": "unhealthy",
+            "database": "disconnected ❌",
+            "error": str(e),
+            "timestamp": datetime.now().isoformat()
+        }
+
 if __name__ == "__main__":
     import uvicorn
+    PORT = int(os.getenv('PORT', 8000))
     print("Reelish Database API iniciada")
     print(f"Base de datos: {DB_CONFIG['database']}")
     print("Documentación: http://localhost:8000/docs")
-    uvicorn.run(app, host="0.0.0.0", port=8000, reload=True)
+    uvicorn.run(app, host="0.0.0.0", reload=True)
