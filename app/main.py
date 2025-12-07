@@ -25,7 +25,7 @@ app = FastAPI(
 # Obtener orígenes permitidos desde variable de entorno
 ALLOWED_ORIGINS = os.getenv(
     'ALLOWED_ORIGINS', 
-    'http://localhost:3000,http://localhost:5173'
+    'http://localhost:3000,http://localhost:5173,https://reelishapprestaurante.vercel.app'
 ).split(',')
 
 app.add_middleware(
