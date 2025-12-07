@@ -30,6 +30,57 @@ def get_productos():
     """
     return execute_query(query)
 
+
+# 🔥 NUEVO: Endpoint para productos en tendencia
+@router.get("/tendencia")
+def get_productos_tendencia():
+    """Obtener productos en tendencia"""
+    query = """
+        SELECT p.*, c.nombre as categoria_nombre
+        FROM productos p
+        LEFT JOIN categorias c ON p.categoria_id = c.id
+        WHERE p.en_tendencia = TRUE 
+        AND p.disponible = TRUE
+        ORDER BY p.fecha_creacion DESC
+        LIMIT 10
+    """
+    return execute_query(query)
+
+
+# 🔥 NUEVO: Endpoint para producto destacado
+@router.get("/destacado")
+def get_producto_destacado():
+    """Obtener un producto destacado"""
+    query = """
+        SELECT p.*, c.nombre as categoria_nombre
+        FROM productos p
+        LEFT JOIN categorias c ON p.categoria_id = c.id
+        WHERE p.en_tendencia = TRUE 
+        AND p.disponible = TRUE
+        ORDER BY RAND()
+        LIMIT 1
+    """
+    result = execute_query(query)
+    if not result:
+        return None
+    return result[0]
+
+
+# 🔥 NUEVO: Endpoint para productos nuevos
+@router.get("/nuevos")
+def get_productos_nuevos():
+    """Obtener productos nuevos"""
+    query = """
+        SELECT p.*, c.nombre as categoria_nombre
+        FROM productos p
+        LEFT JOIN categorias c ON p.categoria_id = c.id
+        WHERE p.es_nuevo = TRUE 
+        AND p.disponible = TRUE
+        ORDER BY p.fecha_creacion DESC
+        LIMIT 10
+    """
+    return execute_query(query)
+
 @router.get("/{id}")
 def get_producto(id: int):
     query = """
