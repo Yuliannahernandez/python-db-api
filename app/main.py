@@ -82,21 +82,7 @@ def execute_query(query: str, params: tuple = None, fetch: bool = True):
         raise HTTPException(status_code=500, detail=f"Error en query: {str(e)}")
 
 
-# ============= AUDITORÍA =============
-@app.post("/auditoria", status_code=status.HTTP_201_CREATED)
-def create_auditoria(
-    usuario_Id: Optional[int] = None,
-    accion: str = "",
-    tabla: str = "",
-    registroId: Optional[int] = None,
-    detalles: Optional[str] = None
-):
-    query = """
-        INSERT INTO auditoria (usuario_Id, accion, tabla, registroId, detalles)
-        VALUES (%s, %s, %s, %s, %s)
-    """
-    result = execute_query(query, (usuario_Id, accion, tabla, registroId, detalles), fetch=False)
-    return {"id": result['last_id']}
+
 
 
 # ============= MODELOS PARA AUDITORÍA =============
